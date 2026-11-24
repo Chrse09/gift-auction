@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF1EC; --surface:#FFFFFF; --surface-2:#DDE8E1; --ink:#0F3B2C; --ink-soft:#3D5E51;
+  --line:#B9CCC1; --berry:#B12E40; --berry-ink:#FFFFFF; --gold:#E2B85F; --gold-ink:#3A2A06;
+  --sprig:#2F6B4E; --note:#2E5B46; --note-paper:#F4EFDD; --snow:rgba(15,59,44,.07);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D2D22; --surface:#143D2F; --surface-2:#1B4A39; --ink:#F7F3E8; --ink-soft:#BFD2C6;
+    --line:#2D5C49; --berry:#D6495B; --berry-ink:#FFFFFF; --gold:#E8C46F; --gold-ink:#2B1F04;
+    --sprig:#6DBE91; --note:#2E5B46; --note-paper:#F4EFDD; --snow:rgba(255,255,255,.06);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D2D22; --surface:#143D2F; --surface-2:#1B4A39; --ink:#F7F3E8; --ink-soft:#BFD2C6;
+  --line:#2D5C49; --berry:#D6495B; --berry-ink:#FFFFFF; --gold:#E8C46F; --gold-ink:#2B1F04;
+  --sprig:#6DBE91; --note:#2E5B46; --note-paper:#F4EFDD; --snow:rgba(255,255,255,.06);
+  color-scheme:dark;
+}
+:root{box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; min-height:100%; background:var(--bg); color:var(--ink);
+  font-family:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif; font-size:17px; line-height:1.5;
+  background-image:radial-gradient(var(--snow) 2px,transparent 2.5px),radial-gradient(var(--snow) 1.5px,transparent 2px);
+  background-size:46px 46px,29px 29px; background-position:0 0,13px 17px;
+}
+.display{font-family:"Young Serif",Georgia,"Times New Roman",serif;font-weight:400}
+.wrap{max-width:1120px;margin:0 auto;padding:12px 20px 48px}
+.wrap.narrow{max-width:520px}
+img,svg{max-width:100%}
+
+/* header */
+.top{display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:4px;margin-bottom:18px;text-align:center}
+.garland{width:100%;max-width:620px;height:46px;display:block}
+.title{margin:0;font-size:clamp(34px,6vw,56px);line-height:1.05;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--ink-soft);font-size:16px}
+
+.seg{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:4px;margin:14px auto 0;gap:4px}
+.seg button{border:0;background:transparent;color:var(--ink);font:600 15px Figtree,system-ui,sans-serif;padding:10px 18px;border-radius:999px;min-height:44px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 0 var(--line)}
+
+/* layout */
+.stage{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.stage{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px}
+.panel.main{border-radius:28px;padding:28px;position:relative;overflow:hidden}
+.panel h2{margin:0 0 12px;font-size:20px}
+.muted{color:var(--ink-soft)}
+.kicker{font-size:15px;color:var(--ink-soft);margin:0 0 4px}
+.present-name{margin:0;font-size:clamp(30px,4.6vw,46px);line-height:1.1;text-wrap:balance}
+
+/* controls */
+.btn{appearance:none;border:0;border-radius:14px;padding:14px 22px;min-height:50px;font:700 17px Figtree,system-ui,sans-serif;cursor:pointer;background:var(--berry);color:var(--berry-ink);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.gold{background:var(--gold);color:var(--gold-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.seg button:focus-visible,.step:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+label.lbl{display:block;font-weight:600;font-size:15px;margin:0 0 6px}
+input.field{width:100%;font:500 18px Figtree,system-ui,sans-serif;padding:13px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);min-height:50px}
+.err{color:var(--berry);font-weight:600;margin:10px 0 0;font-size:15px}
+.hint{font-size:15px;color:var(--ink-soft);margin:8px 0 0}
+
+/* bidder tags */
+.tags{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 22px;padding:0;list-style:none}
+.tag{display:flex;align-items:center;gap:8px;padding:9px 14px 9px 12px;border-radius:12px 999px 999px 12px;background:var(--surface-2);font-weight:600;font-size:16px;position:relative}
+.tag::before{content:"";width:9px;height:9px;border-radius:50%;border:2px solid var(--ink-soft);flex:none}
+.tag.in{background:var(--sprig);color:#fff}
+.tag.in::before{background:#fff;border-color:#fff}
+.tag.won{opacity:.6;text-decoration:line-through}
+.tag.skip{background:transparent;border:1.5px dashed var(--line)}
+.tag.skip::before{border-style:dashed}
+.count{font-size:clamp(44px,7vw,72px);line-height:1;margin:8px 0 0}
+.count small{font-family:Figtree,system-ui,sans-serif;font-size:18px;color:var(--ink-soft);margin-left:8px}
+
+/* sold */
+.stamp{display:inline-block;border:5px solid var(--berry);color:var(--berry);border-radius:14px;padding:4px 22px 0;font-size:clamp(46px,8vw,84px);line-height:1.05;transform:rotate(-7deg);margin:6px 0 18px}
+@media (prefers-reduced-motion:no-preference){
+  .stamp.fresh{animation:stamp .55s cubic-bezier(.2,1.6,.4,1) both}
+  @keyframes stamp{0%{transform:rotate(-14deg) scale(2.4);opacity:0}100%{transform:rotate(-7deg) scale(1);opacity:1}}
+}
+.winner{margin:0;font-size:clamp(30px,5vw,50px);line-height:1.1;text-wrap:balance}
+.price{color:var(--berry)}
+.ranks{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px}
+.ranks li{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:12px;background:var(--surface-2);font-weight:600}
+.ranks li.top{background:var(--gold);color:var(--gold-ink)}
+.ranks .amt{font-family:"Young Serif",Georgia,serif;font-weight:400}
+
+/* results table */
+.table-box{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:16px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+th{font-size:14px;color:var(--ink-soft);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* player */
+.wallet{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-radius:18px;background:var(--surface-2);margin-bottom:16px}
+.wallet .bal{font-size:30px;line-height:1}
+.bidbox{text-align:center}
+.amount{font-size:clamp(72px,22vw,104px);line-height:1;margin:6px 0 4px}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.step{appearance:none;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:16px;min-height:60px;font:700 20px Figtree,system-ui,sans-serif;cursor:pointer}
+.step:disabled{opacity:.4;cursor:not-allowed}
+.notes{height:64px;position:relative;margin:10px auto 0;width:220px}
+.note{position:absolute;left:50%;top:8px;width:92px;height:44px;margin-left:-46px;background:var(--note-paper);border:3px solid var(--note);border-radius:5px;display:flex;align-items:center;justify-content:center;font:700 15px "Young Serif",Georgia,serif;color:var(--note);box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.note::after{content:"";position:absolute;inset:3px;border:1px solid var(--note);border-radius:2px;opacity:.4}
+.placed{margin:14px 0 0;padding:12px 14px;border-radius:14px;background:var(--sprig);color:#fff;font-weight:600}
+.big-msg{margin:0;font-size:clamp(28px,7vw,38px);line-height:1.15;text-wrap:balance}
+.center{text-align:center}
+.loading{padding:60px 0;text-align:center;color:var(--ink-soft)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.foot{margin-top:28px;text-align:center}
+.linkbtn{background:none;border:0;color:var(--ink-soft);text-decoration:underline;font:500 15px Figtree,system-ui,sans-serif;cursor:pointer;min-height:44px;padding:0 8px}
+
+.pinrow{display:flex;gap:10px;margin-top:10px}
+.pinrow input{max-width:180px}
+
+/* live auction */
+.modepick{margin:16px 0 4px}
+.modepick .seg{margin:6px 0 0}
+.status{padding:12px 14px;border-radius:14px;font-weight:700;margin:14px 0 4px;background:var(--surface-2)}
+.status.lead{background:var(--sprig);color:#fff}
+.status.outbid{background:var(--berry);color:var(--berry-ink)}
+.raise{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 6px}
+.raise .step{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:78px;padding:6px}
+.raise .step small{font-weight:600;font-size:13px;color:var(--ink-soft)}
+.clockline{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:8px;font-weight:700}
+.clockline .secs{font-family:"Young Serif",Georgia,serif;font-weight:400;font-size:28px}
+.clockline.twice{color:var(--berry)}
+.board{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;margin:20px 0}
+@media (max-width:560px){.board{grid-template-columns:1fr;justify-items:start}}
+.high{font-size:clamp(68px,11vw,124px);line-height:1;margin:0}
+.leader{margin:8px 0 0;font-size:22px;font-weight:700}
+.clock{width:156px;height:156px;border-radius:50%;border:7px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:none}
+.clock .secs{font-family:"Young Serif",Georgia,serif;font-size:58px;line-height:1}
+.clock .stg{font-weight:700;font-size:15px;min-height:22px;margin-top:2px}
+.clock.once{border-color:var(--gold)}
+.clock.twice{border-color:var(--berry)}
+.clock.twice .stg{color:var(--berry)}
+.war{display:inline-block;background:var(--berry);color:var(--berry-ink);font-weight:800;padding:6px 14px;border-radius:999px;letter-spacing:.04em;margin:0 0 4px}
+.feed{list-style:none;padding:0;margin:0 0 20px;display:grid;gap:6px}
+.feed li{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-radius:10px;background:var(--surface-2);font-weight:600}
+.feed li:first-child{background:var(--gold);color:var(--gold-ink)}
+.feed .amt{font-family:"Young Serif",Georgia,serif;font-weight:400}
+.lastchance{margin:0 0 14px;padding:10px 14px;border-radius:14px;border:1.5px dashed var(--berry);color:var(--berry);font-weight:700;text-align:center}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-24px;width:10px;height:15px;border-radius:2px;animation-name:fall;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(760deg)}}
+@media (prefers-reduced-motion:no-preference){
+  .clock.twice{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{50%{transform:scale(1.05)}}
+  .status.flash{animation:shake .45s}
+  @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Opening the auction…</div></div>
+<script>
+(function(){
+  "use strict";
+  var START=100, STEP=10, MIN=10, POLL=2500, POLL_LIVE=1000, GRACE=1000;
+  var S={id:deviceId(), pin:pinGet(), host:false, view:"player", game:null, players:{}, myBid:null, decided:{},
+    got:false, slow:false, drafts:{name:"",present:"",bid:MIN,pin:"",mode:"live"}, err:"", busy:false,
+    lastStampKey:"", pinOpen:false, epoch:0, roundKey:"", offset:0, flash:false, lastHigh:-1, kickAt:0};
+  var app=document.getElementById("app");
+
+  function deviceId(){
+    var k="giftAuctionId", v=null;
+    try{v=localStorage.getItem(k);}catch(e){}
+    if(!v||!/^[A-Za-z0-9_-]{8,64}$/.test(v)){
+      v="p"+Math.random().toString(36).slice(2)+Date.now().toString(36);
+      try{localStorage.setItem(k,v);}catch(e){}
+    }
+    return v;
+  }
+  function pinGet(){try{return sessionStorage.getItem("giftAuctionPin")||"";}catch(e){return "";}}
+  function pinSet(p){try{if(p)sessionStorage.setItem("giftAuctionPin",p);else sessionStorage.removeItem("giftAuctionPin");}catch(e){}}
+
+  function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function money(n){return "$"+Number(n||0);}
+  function nameOf(id){var p=S.players[id];return (p&&p.name)||"A bidder";}
+  function g(){return S.game||{phase:"lobby",mode:"live",round:0,sub:0,results:[],eligible:[]};}
+  function L(){return g().live||{high:0,leader:null,history:[],endsAt:0};}
+  function results(){return Array.isArray(g().results)?g().results:[];}
+  function winners(){var set={};results().forEach(function(r){if(r.winner)set[r.winner]=r;});return set;}
+  function playerIds(){return Object.keys(S.players).sort(function(a,b){return (S.players[a].joinedAt||0)-(S.players[b].joinedAt||0);});}
+  function remaining(){var w=winners();return playerIds().filter(function(id){return !w[id];});}
+  function eligible(){var e=g().eligible;return Array.isArray(e)?e.filter(function(id){return S.players[id];}):[];}
+  function decided(id){return (S.decided||{})[id]||null;}
+  function serverNow(){return Date.now()+S.offset;}
+  function msLeft(){return L().endsAt-serverNow();}
+  function isWar(){
+    var h=L().history||[]; if(h.length<6)return false;
+    var t=h.slice(-6), a=t[0].id, b=t[1].id; if(a===b)return false;
+    for(var i=0;i<6;i++){if(t[i].id!==(i%2?b:a))return false;}
+    return true;
+  }
+
+  /* ---------- sound, buzz and confetti ---------- */
+  var actx=null;
+  function audio(){
+    if(!actx){try{var C=window.AudioContext||window.webkitAudioContext;if(C)actx=new C();}catch(e){}}
+    if(actx&&actx.state==="suspended")try{actx.resume();}catch(e){}
+    return actx;
+  }
+  function tone(freq,end,dur,vol,type,delay){
+    var c=audio(); if(!c)return;
+    var t=c.currentTime+(delay||0), o=c.createOscillator(), gn=c.createGain();
+    o.type=type||"sine"; o.frequency.setValueAtTime(freq,t); o.frequency.exponentialRampToValueAtTime(end,t+dur);
+    gn.gain.setValueAtTime(vol,t); gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(gn); gn.connect(c.destination); o.start(t); o.stop(t+dur+0.02);
+  }
+  function chime(){tone(880,1320,0.18,0.18,"triangle");}
+  function gavel(){tone(180,55,0.28,0.6,"square");tone(2400,600,0.05,0.25,"triangle");tone(170,50,0.3,0.55,"square",0.32);tone(2200,500,0.05,0.2,"triangle",0.32);}
+  function buzz(){try{if(navigator.vibrate)navigator.vibrate([180,80,180]);}catch(e){}}
+  function confetti(){
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    var box=document.createElement("div"); box.className="confetti"; box.setAttribute("aria-hidden","true");
+    var cols=["var(--berry)","var(--gold)","var(--sprig)","#ffffff"], html="";
+    for(var i=0;i<70;i++){
+      html+='<i style="left:'+(Math.random()*100)+'%;background:'+cols[i%4]+';animation-duration:'+(1.8+Math.random()*1.6).toFixed(2)+'s;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s;transform:rotate('+(Math.random()*180|0)+'deg)"></i>';
+    }
+    box.innerHTML=html; document.body.appendChild(box);
+    setTimeout(function(){box.remove();},4200);
+  }
+
+  var garland='<svg class="garland" viewBox="0 0 620 46" aria-hidden="true" focusable="false">'
+    +'<path d="M6 8 Q155 44 310 12 T614 8" fill="none" stroke="var(--sprig)" stroke-width="3" stroke-linecap="round"/>'
+    +[[70,22,"var(--berry)"],[150,30,"var(--gold)"],[230,24,"var(--berry)"],[310,13,"var(--gold)"],[390,22,"var(--berry)"],[470,28,"var(--gold)"],[550,20,"var(--berry)"]].map(function(o){
+      return '<line x1="'+o[0]+'" y1="'+(o[1]-2)+'" x2="'+o[0]+'" y2="'+(o[1]+5)+'" stroke="var(--ink-soft)" stroke-width="1.5"/>'
+        +'<rect x="'+(o[0]-3)+'" y="'+(o[1]+4)+'" width="6" height="4" rx="1" fill="var(--ink-soft)"/>'
+        +'<circle cx="'+o[0]+'" cy="'+(o[1]+15)+'" r="8" fill="'+o[2]+'"/>'
+        +'<circle cx="'+(o[0]-2.5)+'" cy="'+(o[1]+12.5)+'" r="2" fill="#fff" opacity=".55"/>';
+    }).join("")+'</svg>';
+
+  function header(){
+    var h='<header class="top">'+garland+'<h1 class="title display">The Gift Auction</h1>';
+    if(S.host){
+      h+='<div class="seg" role="group" aria-label="Screen">'
+        +'<button type="button" data-act="view-host" aria-pressed="'+(S.view==="host")+'">Auctioneer screen</button>'
+        +'<button type="button" data-act="view-player" aria-pressed="'+(S.view==="player")+'">My bidding</button></div>';
+    }
+    return h+'</header>';
+  }
+  function hostFooter(){
+    if(S.host)return '<div class="foot"><button class="linkbtn" type="button" data-act="lock">Lock the auctioneer screen</button></div>';
+    if(!S.pinOpen)return '<div class="foot"><button class="linkbtn" type="button" data-act="pin-open">I’m the auctioneer</button></div>';
+    return '<section class="panel" style="margin-top:24px"><label class="lbl" for="pin">Auctioneer PIN</label>'
+      +'<div class="pinrow"><input class="field" id="pin" data-draft="pin" inputmode="numeric" autocomplete="off" value="'+esc(S.drafts.pin)+'">'
+      +'<button class="btn" type="button" data-act="unlock" '+(S.busy?'disabled':'')+'>Unlock</button></div></section>';
+  }
+  function clockText(ms){
+    var s=Math.max(0,Math.ceil(ms/1000));
+    var stage=ms<=0?"Closing…":(ms<=5000?"Going twice…":(ms<=10000?"Going once…":"seconds to go"));
+    var cls=ms<=5000?"twice":(ms<=10000?"once":"");
+    return {s:s,stage:stage,cls:cls};
+  }
+
+  /* ---------- auctioneer ---------- */
+  function hostView(){
+    var st=g(), html="", side="", ids=playerIds(), w=winners();
+    var errHtml=S.err?'<p class="err" role="alert">'+esc(S.err)+'</p>':"";
+    var presentInput=function(label){
+      return '<label class="lbl" for="present">'+label+'</label>'
+        +'<input class="field" id="present" data-draft="present" maxlength="40" autocomplete="off" placeholder="Present '+(results().length+1)+'" value="'+esc(S.drafts.present)+'">';
+    };
+    var modePick='<div class="modepick"><span class="lbl">How to bid on this present</span><div class="seg" role="group" aria-label="Bidding mode">'
+      +'<button type="button" data-act="mode-live" aria-pressed="'+(S.drafts.mode==="live")+'">Live auction</button>'
+      +'<button type="button" data-act="mode-sealed" aria-pressed="'+(S.drafts.mode==="sealed")+'">Sealed bids</button></div>'
+      +'<p class="hint">'+(S.drafts.mode==="live"?'Everyone sees the high bid and raises to beat it. The clock resets with every bid.':'Everyone bids secretly. You reveal the highest.')+'</p></div>';
+
+    if(st.phase==="lobby"){
+      html+='<p class="kicker">Before the first present</p><h2 class="present-name display">'+(ids.length?ids.length+' bidder'+(ids.length===1?'':'s')+' ready':'Waiting for bidders')+'</h2>'
+        +'<p class="hint">Everyone opens this link on their phone, types their name and gets '+money(START)+' in game money. Each person can win one present.</p>'
+        +'<ul class="tags">'+ids.map(function(id){return '<li class="tag">'+esc(nameOf(id))+'</li>';}).join("")+'</ul>'
+        +presentInput("Name the first present (optional)")+modePick
+        +'<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="open" '+(ids.length&&!S.busy?'':'disabled')+'>Open bidding</button></div>'+errHtml;
+    }else if(st.phase==="live"){
+      var lv=L(), c=clockText(msLeft()), hist=(lv.history||[]).slice().reverse().slice(0,8);
+      html+='<p class="kicker">Present '+st.round+', live auction</p><h2 class="present-name display">'+esc(st.present)+'</h2>'
+        +(isWar()?'<p class="war">Bidding war!</p>':'')
+        +'<div class="board"><div>'
+        +(lv.leader?'<p class="high display">'+money(lv.high)+'</p><p class="leader">'+esc(nameOf(lv.leader))+' is winning</p>'
+          :'<p class="high display muted">'+money(MIN)+'</p><p class="leader">Waiting for an opening bid</p>')
+        +'</div><div class="clock '+c.cls+'" data-clockbox role="timer" aria-label="Time left"><span class="secs" data-secs>'+c.s+'</span><span class="stg" data-stage>'+c.stage+'</span></div></div>'
+        +(hist.length?'<ol class="feed" aria-label="Latest bids">'+hist.map(function(h){return '<li><span>'+esc(nameOf(h.id))+'</span><span class="amt">'+money(h.amount)+'</span></li>';}).join("")+'</ol>':'')
+        +'<div class="row"><button class="btn" type="button" data-act="hammer" '+(S.busy?'disabled':'')+'>'+(lv.leader?'Sold! Bring the gavel down':'Close with no bids')+'</button></div>'
+        +'<p class="hint">The clock resets to 15 seconds after every bid. When it runs out, the present is sold to the leader.</p>'+errHtml;
+    }else if(st.phase==="bidding"){
+      var el=eligible(), bidCount=el.filter(function(id){return decided(id)==="bid";}).length, skipCount=el.filter(function(id){return decided(id)==="skip";}).length, inCount=bidCount+skipCount, missing=el.length-inCount;
+      html+='<p class="kicker">Present '+st.round+', sealed bids'+(st.sub?', tie-break':'')+'</p><h2 class="present-name display">'+esc(st.present)+'</h2>'
+        +'<p class="count display">'+inCount+' of '+el.length+'<small>have decided</small></p>'
+        +'<p class="hint" style="margin-top:6px">'+bidCount+' bid'+(bidCount===1?'':'s')+', '+skipCount+' skipping</p>'
+        +'<ul class="tags" aria-label="Bidders">'+el.map(function(id){var d=decided(id);return '<li class="tag'+(d==="bid"?' in':'')+(d==="skip"?' skip':'')+'">'+esc(nameOf(id))+(d==="skip"?' <span class="muted">(skipping)</span>':'')+'<span class="sr">'+(d==="bid"?' has bid':(d?'':' has not decided'))+'</span></li>';}).join("")+'</ul>'
+        +'<div class="row"><button class="btn" type="button" data-act="reveal" '+(inCount&&!S.busy?'':'disabled')+'>'+(missing&&inCount?'Reveal now ('+missing+' still to decide)':'Reveal the winner')+'</button></div>'
+        +'<p class="hint">Bids stay sealed, even from you, until you reveal. Bidders can change theirs until then.</p>'+errHtml;
+    }else if(st.phase==="tie"){
+      var rv=st.reveal||{}, tied=rv.tied||[];
+      html+='<p class="kicker">Present '+st.round+'</p><h2 class="present-name display">'+esc(st.present)+'</h2>'
+        +'<p class="winner display" style="margin-top:18px">A tie at <span class="price">'+money(rv.amount)+'</span></p>'
+        +'<p class="hint" style="font-size:17px">'+tied.map(function(id){return esc(nameOf(id));}).join(" and ")+' bid the same.</p>'
+        +ranks(rv.bids,rv.amount)
+        +'<div class="row" style="margin-top:20px"><button class="btn" type="button" data-act="rebid" '+(S.busy?'disabled':'')+'>Tied bidders bid again</button>'
+        +'<button class="btn ghost" type="button" data-act="draw" '+(S.busy?'disabled':'')+'>Draw at random</button></div>'+errHtml;
+    }else if(st.phase==="nobid"){
+      html+='<p class="kicker">Present '+st.round+'</p><h2 class="present-name display">'+esc(st.present)+'</h2>'
+        +'<p class="winner display" style="margin-top:18px">Nobody bid on this one</p>'
+        +'<p class="hint" style="font-size:17px">'+(st.mode==="live"?'The clock ran out before anyone bid.':'Everyone who decided chose to skip.')+'</p>'
+        +'<div class="row" style="margin-top:20px"><button class="btn" type="button" data-act="reopen" '+(S.busy?'disabled':'')+'>Open bidding again</button>'
+        +'<button class="btn ghost" type="button" data-act="unsold" '+(S.busy?'disabled':'')+'>Pass on this present</button></div>'+errHtml;
+    }else if(st.phase==="sold"){
+      var r=st.reveal||{}, key=st.round+":"+r.winner, fresh=key!==S.lastStampKey; S.lastStampKey=key;
+      var left=remaining();
+      html+='<p class="kicker">Present '+st.round+'</p><h2 class="present-name display">'+esc(st.present)+'</h2>'
+        +(r.winner
+          ?'<div><span class="stamp display'+(fresh?' fresh':'')+'">Sold!</span></div><p class="winner display">'+esc(nameOf(r.winner))+' <span class="muted">for</span> <span class="price">'+money(r.amount)+'</span></p>'
+          :'<div><span class="stamp display'+(fresh?' fresh':'')+'">Passed</span></div><p class="winner display">Nobody took this present</p>')
+        +(r.drawn?'<p class="hint">Won in a random draw after a tie.</p>':'')
+        +ranks(r.bids,r.amount)
+        +'<div style="margin-top:22px">'
+        +(left.length?presentInput("Name the next present (optional)")+modePick+'<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="open" '+(S.busy?'disabled':'')+'>Open bidding on the next present</button><button class="btn ghost" type="button" data-act="finish" '+(S.busy?'disabled':'')+'>End the auction</button><span class="muted">'+left.length+' bidder'+(left.length===1?'':'s')+' still to win</span></div>'
+          :'<button class="btn gold" type="button" data-act="finish" '+(S.busy?'disabled':'')+'>Show the final results</button>')
+        +'</div>'+errHtml;
+    }else if(st.phase==="done"){
+      html+='<p class="kicker">Auction closed</p><h2 class="present-name display">Merry Christmas, everyone</h2>'
+        +'<p class="hint" style="font-size:17px">The auction is over. Here’s who took home what.</p>'+resultsTable()+errHtml;
+    }
+    side+='<section class="panel"><h2 class="display">Bidders</h2>'
+      +(ids.length?'<ul class="ranks">'+ids.map(function(id){var r=w[id];return '<li><span>'+esc(nameOf(id))+'</span><span class="amt">'+(r?'won, '+money(START-r.amount)+' left':money(START))+'</span></li>';}).join("")+'</ul>'
+        :'<p class="muted" style="margin:0">Nobody has joined yet. Share the link and ask everyone to open it on their phone.</p>')
+      +'</section>';
+    if(results().length&&st.phase!=="done")side+='<section class="panel" style="margin-top:20px"><h2 class="display">Sold so far</h2>'+resultsTable()+'</section>';
+    return header()+'<main class="wrap"><div class="stage"><section class="panel main">'+html+'</section><aside>'+side
+      +'<div class="foot"><button class="linkbtn" type="button" data-act="reset">Start a new game</button></div></aside></div>'+hostFooter()+'</main>';
+  }
+  function ranks(list,top){
+    if(!Array.isArray(list)||!list.length)return "";
+    return '<ol class="ranks" aria-label="All bids">'+list.map(function(b){return '<li class="'+(b.amount===top?'top':'')+'"><span>'+esc(S.players[b.id]?nameOf(b.id):b.name)+'</span><span class="amt">'+money(b.amount)+'</span></li>';}).join("")+'</ol>';
+  }
+  function resultsTable(){
+    var rs=results(); if(!rs.length)return "";
+    return '<div class="table-box"><table><thead><tr><th>Present</th><th>Winner</th><th class="num">Paid</th></tr></thead><tbody>'
+      +rs.map(function(r){return '<tr><td>'+esc(r.present)+'</td><td>'+(r.winner?esc(nameOf(r.winner)):'<span class="muted">Nobody</span>')+'</td><td class="num">'+(r.winner?money(r.amount):'–')+'</td></tr>';}).join("")+'</tbody></table></div>';
+  }
+
+  /* ---------- bidder ---------- */
+  function livePanel(bal,canBid){
+    var st=g(), lv=L(), c=clockText(msLeft()), me=S.id, errHtml=S.err?'<p class="err" role="alert">'+esc(S.err)+'</p>':"";
+    var bidBefore=(lv.history||[]).some(function(h){return h.id===me;});
+    var status, cls="";
+    if(lv.leader===me){status='You’re winning at '+money(lv.high)+'!';cls="lead";}
+    else if(lv.leader&&bidBefore){status='You’ve been outbid by '+esc(nameOf(lv.leader))+'!';cls="outbid";}
+    else if(lv.leader){status=esc(nameOf(lv.leader))+' has the highest bid';}
+    else status='No bids yet. Be the first!';
+    var buttons="";
+    if(canBid){
+      buttons='<div class="raise">'+[10,20,50].map(function(inc){
+        var target=(lv.high||0)+inc, dis=S.busy||lv.leader===me||target>bal;
+        return '<button class="step" type="button" data-act="raise" data-amt="'+target+'" '+(dis?'disabled':'')+' aria-label="Bid '+money(target)+'">+'+money(inc)+'<small>Bid '+money(target)+'</small></button>';
+      }).join("")+'</div>'
+      +'<p class="hint">'+(lv.leader===me?'Hold tight. Someone may raise.':'Each tap beats the current bid. You have '+money(bal)+'.')+'</p>';
+    }
+    return '<section class="panel bidbox"><p class="kicker">Live auction</p><h2 class="present-name display" style="font-size:30px">'+esc(st.present)+'</h2>'
+      +(isWar()?'<p class="war" style="margin-top:10px">Bidding war!</p>':'')
+      +'<p class="status '+cls+(S.flash&&cls==="outbid"?' flash':'')+'" role="status">'+status+'</p>'
+      +'<p class="amount display">'+money(lv.high||0)+'</p>'
+      +'<p class="clockline '+c.cls+'" data-clockbox><span class="secs" data-secs>'+c.s+'</span><span data-stage>'+c.stage+'</span></p>'
+      +buttons+errHtml+'</section>';
+  }
+  function playerView(){
+    var me=S.players[S.id], st=g(), body="";
+    var errHtml=S.err?'<p class="err" role="alert">'+esc(S.err)+'</p>':"";
+    if(!me){
+      body='<section class="panel"><h2 class="display" style="font-size:26px">Join the auction</h2>'
+        +'<p class="muted" style="margin-top:0">You get '+money(START)+' in game money to win one present. Outbid everyone before the clock runs out, or let a present go if you don’t want it.</p>'
+        +'<label class="lbl" for="pname">Your name</label><input class="field" id="pname" data-draft="name" maxlength="24" autocomplete="nickname" value="'+esc(S.drafts.name)+'">'
+        +'<button class="btn block" style="margin-top:14px" type="button" data-act="join" '+(S.busy?'disabled':'')+'>Join the auction</button>'+errHtml+'</section>';
+      return header()+'<main class="wrap narrow">'+body+hostFooter()+'</main>';
+    }
+    var myWin=winners()[S.id], bal=START-(myWin?myWin.amount:0);
+    var wallet='<div class="wallet"><div><div class="muted" style="font-size:14px">'+esc(me.name)+'’s game money</div><div class="bal display">'+money(bal)+'</div></div>'
+      +(myWin?'<span class="tag in">Won '+esc(myWin.present)+'</span>':'')+'</div>';
+    var left=remaining(), lastChance=(!myWin&&left.length>1&&left.length<=3&&(st.phase==="live"||st.phase==="bidding"))
+      ?'<p class="lastchance">Last chance: only '+left.length+' bidders still without a present.</p>':'';
+
+    if(st.phase==="lobby"){
+      body='<p class="big-msg display center">You’re in. Waiting for the auctioneer to open bidding.</p>';
+    }else if(st.phase==="live"){
+      var canBid=!myWin&&eligible().indexOf(S.id)>=0;
+      body=lastChance+livePanel(bal,canBid)
+        +(myWin?'<p class="hint center">You’ve won '+esc(myWin.present)+'. Watch the others battle it out.</p>':(!canBid?'<p class="hint center">You’ll join from the next present.</p>':''));
+    }else if(st.phase==="bidding"){
+      if(myWin){
+        body='<p class="big-msg display center">You’ve won '+esc(myWin.present)+'. Sit back and enjoy the bidding.</p>';
+      }else if(eligible().indexOf(S.id)<0){
+        body='<p class="big-msg display center">Bidding is open on '+esc(st.present)+'. You’ll join from the next present.</p>';
+      }else{
+        var cur=S.myBid, mySkip=!!(cur&&cur.skip), mine=(cur&&!cur.skip)?Number(cur.amount):null;
+        var a=Math.max(MIN,Math.min(bal,S.drafts.bid)), n=a/STEP, notes="";
+        for(var i=0;i<n;i++){var off=i-(n-1)/2;notes+='<div class="note" aria-hidden="true" style="transform:translateX('+(off*11)+'px) rotate('+(off*4)+'deg)">10</div>';}
+        body=lastChance+'<section class="panel bidbox"><p class="kicker">'+(st.sub?'Tie-break on':'Sealed bids on')+'</p><h2 class="present-name display" style="font-size:30px">'+esc(st.present)+'</h2>'
+          +'<div class="notes">'+notes+'</div>'
+          +'<p class="amount display"><span class="sr">Your bid: </span>'+money(a)+'</p>'
+          +'<div class="steps"><button class="step" type="button" data-act="minus" '+(a<=MIN?'disabled':'')+' aria-label="Bid ten dollars less">− $10</button>'
+          +'<button class="step" type="button" data-act="plus" '+(a>=bal?'disabled':'')+' aria-label="Bid ten dollars more">+ $10</button></div>'
+          +'<button class="btn block" type="button" data-act="bid" '+(S.busy||mine===a?'disabled':'')+'>'+(mine===null?'Place bid of '+money(a):(mine===a?'Bid placed':'Change bid to '+money(a)))+'</button>'
+          +(mine!==null?'<p class="placed">Your sealed bid: '+money(mine)+'. You can change it until the winner is revealed.</p>'
+            :(mySkip?'<p class="placed">You’re skipping this present. You can still bid until the winner is revealed.</p>':'<p class="hint">Bids are sealed. Nobody sees yours until the auctioneer reveals.</p>'))
+          +(mySkip?'':'<button class="btn ghost block" style="margin-top:10px" type="button" data-act="skip" '+(S.busy?'disabled':'')+'>Skip this present</button>')
+          +errHtml+'</section>';
+      }
+    }else if(st.phase==="nobid"){
+      body='<p class="big-msg display center">Nobody bid on '+esc(st.present)+'. Waiting for the auctioneer.</p>';
+    }else if(st.phase==="tie"){
+      var rv=st.reveal||{}, tiedMe=(rv.tied||[]).indexOf(S.id)>=0;
+      body='<p class="big-msg display center">'+(tiedMe?'You’re tied at '+money(rv.amount)+'. Get ready to bid again.':'It’s a tie at '+money(rv.amount)+'. The auctioneer is deciding.')+'</p>';
+    }else if(st.phase==="sold"){
+      var r=st.reveal||{};
+      body=!r.winner?'<p class="big-msg display center">Nobody took '+esc(st.present)+'. Next present coming up.</p>'
+        :r.winner===S.id
+        ?'<div class="center"><span class="stamp display">Sold!</span><p class="big-msg display">You won '+esc(st.present)+' for '+money(r.amount)+'.</p></div>'
+        :'<p class="big-msg display center">'+esc(nameOf(r.winner))+' won '+esc(st.present)+' for '+money(r.amount)+'.</p>'+(myWin?'':'<p class="hint center">Next present coming up.</p>');
+    }else if(st.phase==="done"){
+      body='<p class="big-msg display center">'+(myWin?'You took home '+esc(myWin.present)+' for '+money(myWin.amount)+'. Merry Christmas!':'The auction is closed. Merry Christmas!')+'</p>';
+    }
+    return header()+'<main class="wrap narrow">'+wallet+body+hostFooter()+'</main>';
+  }
+
+  function render(){
+    var act=document.activeElement, aid=act&&act.id, sel=null;
+    try{if(act&&act.selectionStart!=null)sel=[act.selectionStart,act.selectionEnd];}catch(e){}
+    var html;
+    if(!S.got) html=header()+'<div class="loading">'+(S.slow?'Still connecting to the auction. Check your connection; this page keeps trying.':'Opening the auction…')+'</div>';
+    else html=(S.host&&S.view==="host")?hostView():playerView();
+    app.innerHTML=html;
+    if(aid){var el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1]);}catch(e){}}}
+  }
+
+  /* clock ticks without re-rendering, so taps on bid buttons never get lost */
+  setInterval(function(){
+    if(g().phase!=="live")return;
+    var ms=msLeft(), c=clockText(ms);
+    var boxes=app.querySelectorAll("[data-clockbox]");
+    for(var i=0;i<boxes.length;i++){
+      boxes[i].classList.toggle("once",c.cls==="once");
+      boxes[i].classList.toggle("twice",c.cls==="twice");
+      var s=boxes[i].querySelector("[data-secs]"), t=boxes[i].querySelector("[data-stage]");
+      if(s&&s.textContent!==String(c.s))s.textContent=c.s;
+      if(t&&t.textContent!==c.stage)t.textContent=c.stage;
+    }
+    if(ms<-GRACE&&Date.now()-S.kickAt>1200){S.kickAt=Date.now();refresh();}
+  },200);
+
+  /* ---------- server ---------- */
+  function applyView(v){
+    var prev=S.game, prevLive=prev&&prev.live, me=S.id, wasHostScreen=S.host&&S.view==="host";
+    S.got=true; S.slow=false;
+    if(typeof v.now==="number")S.offset=v.now-Date.now();
+    S.game=v.game; S.host=!!v.host; S.myBid=v.myBid||null; S.decided=v.decided||{};
+    var m={}; (v.players||[]).forEach(function(p){m[p.id]=p;}); S.players=m;
+    if(!S.host&&S.view==="host")S.view="player";
+    var st=g(), rk=st.round+":"+(st.sub||0);
+    if((st.phase==="bidding"||st.phase==="live")&&rk!==S.roundKey){S.roundKey=rk;S.drafts.bid=MIN;S.lastHigh=-1;}
+
+    S.flash=false;
+    if(st.phase==="live"){
+      var lv=st.live||{};
+      if(lv.high!==S.lastHigh){
+        if(S.lastHigh>=0){
+          S.err="";
+          if(wasHostScreen)chime();
+          if(prevLive&&prevLive.leader===me&&lv.leader!==me){buzz();S.flash=true;}
+        }
+        S.lastHigh=lv.high;
+      }
+    }
+    if(st.phase==="sold"&&prev&&prev.phase!=="sold"&&st.reveal&&st.reveal.winner){
+      if(S.host&&S.view==="host"){gavel();confetti();}
+      else if(st.reveal.winner===me)confetti();
+    }
+    render();
+  }
+  function call(req,ok,bad){
+    req.id=S.id; req.pin=S.pin;
+    google.script.run.withSuccessHandler(ok).withFailureHandler(bad).api(req);
+  }
+  var pollTimer=null;
+  function schedule(ms){clearTimeout(pollTimer);pollTimer=setTimeout(poll,ms);}
+  function interval(){return g().phase==="live"?POLL_LIVE:POLL;}
+  function poll(){
+    if(S.busy){schedule(400);return;}
+    var ep=S.epoch;
+    call({act:"view"},function(v){if(ep===S.epoch)applyView(v);schedule(interval());},function(){schedule(interval()*2);});
+  }
+  function refresh(){schedule(0);}
+  function act(req,after){
+    if(S.busy)return; S.busy=true; S.err=""; S.epoch++; audio(); render();
+    call(req,function(v){S.busy=false;if(after)after(v);applyView(v);},function(e){
+      S.busy=false; S.err=(e&&e.message)||"That didn’t save. Check your connection and try again.";
+      if(req.act==="unlock"){S.pin="";pinSet("");}
+      render(); refresh();
+    });
+  }
+
+  app.addEventListener("click",function(e){
+    audio();
+    var b=e.target.closest("[data-act]"); if(!b||b.disabled)return;
+    var a=b.getAttribute("data-act");
+    if(a==="view-host"){S.view="host";S.err="";render();return;}
+    if(a==="view-player"){S.view="player";S.err="";render();return;}
+    if(a==="mode-live"||a==="mode-sealed"){S.drafts.mode=a==="mode-live"?"live":"sealed";render();return;}
+    if(a==="plus"){S.drafts.bid=Math.min(START,S.drafts.bid+STEP);render();return;}
+    if(a==="minus"){S.drafts.bid=Math.max(MIN,S.drafts.bid-STEP);render();return;}
+    if(a==="pin-open"){S.pinOpen=true;render();var p=document.getElementById("pin");if(p)p.focus();return;}
+    if(a==="lock"){S.pin="";pinSet("");S.host=false;S.view="player";S.pinOpen=false;render();return;}
+    if(a==="unlock"){unlock();return;}
+    if(a==="reset"&&!window.confirm("Start a new game? This removes every bidder, bid and result."))return;
+    if(a==="join"){act({act:"join",name:S.drafts.name});return;}
+    if(a==="raise"){act({act:"raise",amount:Number(b.getAttribute("data-amt"))});return;}
+    if(a==="bid"){var me=winners()[S.id],bal=START-(me?me.amount:0);act({act:"bid",amount:Math.max(MIN,Math.min(bal,S.drafts.bid))});return;}
+    if(a==="open"){openNext();return;}
+    if(["skip","reveal","rebid","draw","reopen","unsold","finish","reset","hammer"].indexOf(a)>=0)act({act:a});
+  });
+  function openNext(){var pr=S.drafts.present;act({act:"open",present:pr,mode:S.drafts.mode},function(){S.drafts.present="";});}
+  function unlock(){
+    var p=S.drafts.pin.trim(); if(!p){S.err="Type the auctioneer PIN.";render();return;}
+    S.pin=p; pinSet(p);
+    act({act:"unlock"},function(){S.view="host";S.drafts.pin="";S.pinOpen=false;});
+  }
+  app.addEventListener("input",function(e){var k=e.target.getAttribute&&e.target.getAttribute("data-draft");if(k)S.drafts[k]=e.target.value;});
+  app.addEventListener("keydown",function(e){
+    if(e.key!=="Enter")return;
+    if(e.target.id==="pname")act({act:"join",name:S.drafts.name});
+    if(e.target.id==="pin")unlock();
+    if(e.target.id==="present"&&(g().phase==="lobby"||g().phase==="sold"))openNext();
+  });
+
+  render();
+  setTimeout(function(){if(!S.got){S.slow=true;render();}},10000);
+  if(S.pin)S.view="host";
+  poll();
+})();
+</script>
+</body>
+</html>
